@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Разкрой за кухня</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8EDEE; --panel:#FFFFFF; --ink:#12232B; --muted:#55666E; --line:#C7D1D4; --soft:#F2F5F6;
+  --accent:#0B6E5F; --accent-ink:#FFFFFF; --warn:#8A5300; --warn-bg:#FFF2D6; --bad:#A3321F; --ok:#0B6E5F;
+}
+*{box-sizing:border-box}
+html{font-size:15px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Golos Text',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.45;font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-0.01em}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding:14px 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+.top h1{font-size:1.25rem}
+.top .name{flex:1 1 220px;max-width:340px}
+.top .name input{width:100%}
+.top .actions{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+
+.layout{display:grid;grid-template-columns:1fr;gap:16px;padding:16px 20px 40px;max-width:1500px;margin:0 auto}
+@media(min-width:1050px){.layout{grid-template-columns:minmax(360px,440px) 1fr;align-items:start}}
+
+.editor{background:var(--panel);border:1px solid var(--line);border-radius:6px}
+.editor details{border-bottom:1px solid var(--line)}
+.editor details:last-child{border-bottom:0}
+.editor summary{cursor:pointer;padding:12px 16px;font-weight:600;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.editor summary::-webkit-details-marker{display:none}
+.editor summary::after{content:"+";font-weight:400;font-size:1.2rem;color:var(--muted)}
+.editor details[open] summary::after{content:"\2212"}
+.editor .body{padding:2px 16px 16px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.field{display:flex;flex-direction:column;gap:3px;font-size:.86rem;color:var(--muted)}
+.field.wide{grid-column:1/-1}
+.field input,.field select{height:34px}
+input[type=number],input[type=text],select{width:100%;border:1px solid var(--line);border-radius:4px;padding:0 8px;background:#fff;color:var(--ink)}
+input[type=number]{text-align:right}
+.check{display:flex;align-items:center;gap:8px;font-size:.9rem;grid-column:1/-1}
+.check input{width:16px;height:16px}
+
+.btn{border:1px solid var(--line);background:#fff;border-radius:4px;height:34px;padding:0 12px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.small{height:28px;padding:0 8px;font-size:.85rem}
+.btn.icon{width:28px;padding:0}
+
+.badge{font-size:.8rem;font-weight:500;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--muted)}
+.badge.ok{background:#DDF1EC;color:var(--ok)}
+.badge.bad{background:#FBE3DE;color:var(--bad)}
+.rowhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 8px}
+
+.mod{border-top:1px solid var(--line);padding:10px 0}
+.mod:first-of-type{border-top:0}
+.mod .l1{display:grid;grid-template-columns:1fr 84px auto;gap:6px;align-items:center}
+.mod .l2{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:6px}
+.mod .l2 label{display:flex;flex-direction:column;gap:2px;font-size:.78rem;color:var(--muted)}
+.mod .l2 input[type=number]{width:74px;height:30px}
+.mod .l2 input[type=text]{width:150px;height:30px}
+.mod .l2 .inl{flex-direction:row;align-items:center;gap:6px;font-size:.85rem;color:var(--ink);padding-top:16px}
+.mod .l2 .inl input{width:16px;height:16px}
+.mod .btns{display:flex;gap:2px}
+.hint{font-size:.8rem;color:var(--muted);margin-top:4px}
+.addbar{display:flex;gap:6px;margin-top:10px}
+.addbar select{height:30px}
+
+.output{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;min-width:0}
+.card>header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.card>header h2{font-size:1.02rem}
+.card .pad{padding:12px 16px}
+.exports{display:flex;flex-wrap:wrap;gap:6px}
+#sketch{padding:8px 12px 12px;overflow-x:auto}
+#sketch svg{display:block;width:100%;height:auto;min-width:640px}
+
+.notes{margin:0;padding:10px 16px;background:var(--warn-bg);color:var(--warn);font-size:.88rem;border-bottom:1px solid var(--line)}
+.notes ul{margin:0;padding-left:18px}
+.notes:empty{display:none}
+
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;background:var(--soft);position:sticky;top:0}
+td.n,th.n{text-align:right}
+tr.grp td{background:var(--soft);font-weight:600;color:var(--ink);border-bottom:1px solid var(--line)}
+tfoot td{font-weight:600;border-top:2px solid var(--ink)}
+.sumgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;padding:12px 16px}
+.stat{padding:8px 0;border-top:2px solid var(--ink)}
+.stat b{display:block;font-size:1.35rem;font-weight:600}
+.stat span{font-size:.84rem;color:var(--muted)}
+.small{font-size:.84rem;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>Разкрой за кухня</h1>
+  <div class="name"><input id="projName" type="text" aria-label="Име на проекта" placeholder="Име на проекта"></div>
+  <div class="actions">
+    <button class="btn primary" id="btnSave">Запази в браузъра</button>
+    <button class="btn" id="btnExportJson">Свали проекта</button>
+    <label class="btn" for="fileJson" style="display:inline-flex;align-items:center">Зареди проект</label>
+    <input id="fileJson" type="file" accept="application/json,.json" hidden>
+    <button class="btn" id="btnReset">Започни наново</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="editor" id="editor" aria-label="Настройки на проекта"></section>
+
+  <section class="output">
+    <div class="card">
+      <header>
+        <h2>Скица отпред</h2>
+        <div class="exports">
+          <button class="btn small" id="btnSvg">SVG</button>
+          <button class="btn small" id="btnPng">PNG</button>
+          <button class="btn small primary" id="btnDxf">DXF за AutoCAD</button>
+        </div>
+      </header>
+      <div id="sketch"></div>
+    </div>
+
+    <div class="card">
+      <header>
+        <h2>Разкрой</h2>
+        <div class="exports">
+          <button class="btn small primary" id="btnXlsx">Excel</button>
+          <button class="btn small" id="btnCsv">CSV</button>
+        </div>
+      </header>
+      <div class="notes" id="notes"></div>
+      <div class="tablewrap" id="cutTable"></div>
+    </div>
+
+    <div class="card">
+      <header><h2>Материали и цена</h2></header>
+      <div class="sumgrid" id="stats"></div>
+      <div class="tablewrap" id="sumTable"></div>
+      <div class="pad small" id="extra"></div>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ===== Конфигурация ===== */
+const MN = {carcass:'ПДЧ 18 корпус', front:'ПДЧ 18 фасади', d16:'ПДЧ 16 чекмеджета', hdf:'ХДФ 3 гръбове'};
+const MKEYS = ['carcass','front','d16','hdf'];
+
+const BASE_TYPES = {
+  sink:   {label:'Шкаф за мивка',        short:'Мивка',       def:{w:900,doors:2,shelves:0}},
+  doors:  {label:'Шкаф с врати',         short:'Шкаф',        def:{w:600,doors:1,shelves:1}},
+  drawers:{label:'Шкаф с чекмеджета',    short:'Чекмеджета',  def:{w:600,fronts:'186,252,306',hob:false}},
+  dw:     {label:'Съдомиялна',           short:'Съдомиялна',  def:{w:450,panelH:720}},
+  oven:   {label:'Колона с фурна',       short:'Фурна',       def:{w:600,drawerH:600,ovenH:600}},
+  fridge: {label:'Хладилник',            short:'Хладилник',   def:{w:600,h:1850}}
+};
+const UP_TYPES = {
+  cab:  {label:'Шкаф',          short:'Шкаф',      def:{w:450,doors:1,shelves:1}},
+  hood: {label:'Аспиратор',     short:'Аспиратор', def:{w:600}},
+  gap:  {label:'Празно място',  short:'',          def:{w:600,label:''}}
+};
+const GROUP = {base:'Долен ред', up1:'Горен основен ред', up2:'Най-горен ред'};
+
+const LAYERS = {
+  CABINETS:  {aci:7,  stroke:'#2B3A41', fill:'#F4F6F6'},
+  FRONTS:    {aci:30, stroke:'#6B5A3C', fill:'#EADFCB'},
+  APPLIANCES:{aci:4,  stroke:'#2E5E57', fill:'#CFE3E0'},
+  COUNTERTOP:{aci:2,  stroke:'#6B5A3C', fill:'#B98F55'},
+  HARDWARE:  {aci:8,  stroke:'#2B3A41', fill:'none'},
+  FLOOR:     {aci:8,  stroke:'#12232B', fill:'none'},
+  DIMS:      {aci:5,  stroke:'#1F5FA8', fill:'none'},
+  TEXT:      {aci:7,  stroke:'#12232B', fill:'#12232B'}
+};
+
+function defaultState(){
+  return {
+    name:'Права кухня 3500',
+    g:{L:3500,t:18,legs:100,counterH:900,counterT:40,baseDepth:550,baseCar:530,upDepth:350,upCar:332,
+       tallH:2150,mainBottom:1450,mainTop:1900,railW:100,gap:2,shelfSet:30,extBase:true,extUp:true,
+       sheetL:2800,sheetW:2070,waste:10},
+    d:{sys:'tandem',NL:500,backH:0,boxH:230,bt:16},
+    prices:{carcass:49,front:72,d16:49,hdf:25},
+    base:[
+      {type:'fridge',w:600,h:1850},
+      {type:'sink',w:900,doors:2,shelves:0},
+      {type:'dw',w:450,panelH:720},
+      {type:'drawers',w:600,fronts:'186,252,306',hob:true},
+      {type:'doors',w:350,doors:1,shelves:1},
+      {type:'oven',w:600,drawerH:600,ovenH:600}
+    ],
+    up1:[
+      {type:'gap',w:600,label:''},
+      {type:'cab',w:450,doors:1,shelves:1},
+      {type:'cab',w:450,doors:1,shelves:1},
+      {type:'cab',w:450,doors:1,shelves:1},
+      {type:'hood',w:600},
+      {type:'cab',w:350,doors:1,shelves:1},
+      {type:'gap',w:600,label:''}
+    ],
+    up2:[
+      {type:'cab',w:600,doors:1,shelves:0},
+      {type:'cab',w:450,doors:1,shelves:0},
+      {type:'cab',w:450,doors:1,shelves:0},
+      {type:'cab',w:450,doors:1,shelves:0},
+      {type:'gap',w:600,label:''},
+      {type:'cab',w:350,doors:1,shelves:0},
+      {type:'gap',w:600,label:''}
+    ]
+  };
+}
+
+/* ===== Помощни ===== */
+const r1 = x => Math.round(x*10)/10;
+const num = v => { const n = parseFloat(String(v).replace(',','.')); return isFinite(n) ? n : 0; };
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const sumW = arr => arr.reduce((a,m)=>a+(m.w||0),0);
+const bodyH = g => g.counterH - g.legs - g.counterT;
+const parseFronts = s => String(s||'').split(/[,; ]+/).map(num).filter(v=>v>0);
+const fmt = n => { const r=r1(n); return Number.isInteger(r) ? String(r) : r.toFixed(1); };
+
+/* ===== Изчисление на разкроя ===== */
+function compute(S){
+  const g=S.g, t=g.t, gap=g.gap, d=S.d;
+  const parts=[], notes=new Set(), cnt={doors:0,drawers:0,shelves:0,hinges:0};
+  const add=(grp,mod,part,mat,L,W,q,edge='-')=>{ if(L>0&&W>0&&q>0) parts.push({grp,mod,part,mat,L:r1(L),W:r1(W),q,edge}); };
+  const doorW=(W,n)=>(W-(n+1)*gap)/n;
+  const hinges=(h)=> h<=900?2: h<=1600?3:4;
+
+  const boxes=(grp,mod,W,n)=>{
+    const cw=W-2*t; cnt.drawers+=n;
+    if(d.sys==='tandem'){
+      add(grp,mod,'Дъно на чекмедже (Tandembox)','d16',d.NL-10,cw-75,n);
+      if(d.backH>0) add(grp,mod,'Гръб на чекмедже (Tandembox)','d16',cw-75,d.backH,n);
+      else notes.add('Въведи височината на гърба на Tandembox в раздел „Чекмеджета“, за да влезе в разкроя.');
+    } else {
+      const wb=cw-26, dep=d.NL-10;
+      add(grp,mod,'Страници на кутия','d16',dep,d.boxH,2*n);
+      add(grp,mod,'Преден и заден борд на кутия','d16',wb-2*d.bt,d.boxH,2*n);
+      add(grp,mod,'Дъно на кутия','hdf',wb,dep,n);
+    }
+  };
+
+  const baseCarcass=(grp,mod,W,shelves)=>{
+    const bh=bodyH(g), cd=g.baseCar, inner=W-2*t;
+    add(grp,mod,'Страници','carcass',g.extBase?bh-t:bh,cd,2,'преден');
+    add(grp,mod,g.extBase?'Дъно (външно)':'Дъно','carcass',g.extBase?W:inner,cd,1,g.extBase?'преден + 2 странични':'преден');
+    add(grp,mod,'Греди (предна и задна)','carcass',inner,g.railW,2);
+    if(shelves>0){ add(grp,mod,'Рафт','carcass',inner-2,cd-g.shelfSet,shelves,'преден'); cnt.shelves+=shelves; }
+    add(grp,mod,'Гръб','hdf',W-4,bh-4,1);
+  };
+
+  S.base.forEach((m,i)=>{
+    const grp=GROUP.base, T=BASE_TYPES[m.type]; if(!T) return;
+    const mod=`${i+1}. ${T.label} ${fmt(m.w)}`, W=m.w, bh=bodyH(g), fw=W-2*gap, inner=W-2*t;
+    if(m.type==='fridge') return;
+    add(grp,mod,'Цокъл','front',W-4,g.legs,1,'преден');
+    if(m.type==='sink'||m.type==='doors'){
+      const n=Math.max(1,m.doors|0);
+      baseCarcass(grp,mod,W,m.shelves|0);
+      add(grp,mod,'Врати','front',bh-2*gap,doorW(W,n),n,'4 ръба');
+      cnt.doors+=n; cnt.hinges+=n*hinges(bh-2*gap);
+    } else if(m.type==='drawers'){
+      baseCarcass(grp,mod,W,0);
+      const fr=parseFronts(m.fronts);
+      fr.forEach((h,k)=>add(grp,mod,`Чело чекмедже ${k+1}`,'front',fw,h,1,'4 ръба'));
+      boxes(grp,mod,W,fr.length);
+    } else if(m.type==='dw'){
+      add(grp,mod,'Челен панел','front',m.panelH,fw,1,'4 ръба');
+    } else if(m.type==='oven'){
+      const carcH=g.tallH-g.legs, dh=m.drawerH, oh=m.ovenH, th=carcH-dh-oh, cd=g.baseCar, ext=g.extUp;
+      if(th<=0) notes.add('Колоната с фурна: височините на чекмеджето и фурната надвишават височината на колоната.');
+      add(grp,mod,'Страници','carcass',ext?carcH-2*t:carcH,cd,2,'преден');
+      if(ext){ add(grp,mod,'Таван и дъно (външни)','carcass',W,cd,2,'преден + 2 странични'); }
+      else   { add(grp,mod,'Таван и дъно','carcass',inner,cd,2,'преден'); }
+      add(grp,mod,'Вътрешни хоризонтали (под и над фурната)','carcass',inner,cd,2,'преден');
+      add(grp,mod,'Гръб, долна секция','hdf',W-4,dh,1);
+      add(grp,mod,'Гръб, горна секция','hdf',W-4,th,1);
+      add(grp,mod,'Чело чекмедже долу','front',fw,dh-2*gap,1,'4 ръба');
+      add(grp,mod,'Врата горе','front',th-2*gap,fw,1,'4 ръба');
+      cnt.doors+=1; cnt.hinges+=hinges(th-2*gap);
+      boxes(grp,mod,W,1);
+    }
+  });
+
+  ['up1','up2'].forEach(key=>{
+    const grp=GROUP[key];
+    const H = key==='up1' ? g.mainTop-g.mainBottom : g.tallH-g.mainTop;
+    if(H<=0){ notes.add(`${grp}: височината е 0 или отрицателна. Провери размерите на горните шкафове.`); return; }
+    S[key].forEach((m,i)=>{
+      if(m.type!=='cab') return;
+      const mod=`${i+1}. Шкаф ${fmt(m.w)}`, W=m.w, cd=g.upCar, inner=W-2*t, n=Math.max(1,m.doors|0);
+      if(g.extUp){
+        add(grp,mod,'Страници','carcass',H-2*t,cd,2,'преден');
+        add(grp,mod,'Горе и долу (външни)','carcass',W,cd,2,'преден + 2 странични');
+      } else {
+        add(grp,mod,'Страници','carcass',H,cd,2,'преден');
+        add(grp,mod,'Горе и долу','carcass',inner,cd,2,'преден');
+      }
+      if((m.shelves|0)>0){ add(grp,mod,'Рафт','carcass',inner-2,cd-g.shelfSet,m.shelves|0,'преден'); cnt.shelves+=m.shelves|0; }
+      add(grp,mod,'Гръб','hdf',W-4,H-4,1);
+      add(grp,mod,n>1?'Врати':'Врата','front',H-2*gap,doorW(W,n),n,'4 ръба');
+      cnt.doors+=n; cnt.hinges+=n*hinges(H-2*gap);
+    });
+  });
+
+  ['base','up1','up2'].forEach(k=>{
+    const s=sumW(S[k]);
+    if(Math.abs(s-g.L)>0.5) notes.add(`${GROUP[k]}: сборът на ширините е ${fmt(s)} мм вместо ${fmt(g.L)} мм (${s>g.L?'надвишава с':'липсват'} ${fmt(Math.abs(s-g.L))} мм).`);
+  });
+
+  const area={}, qty={}; MKEYS.forEach(k=>{area[k]=0;qty[k]=0;});
+  parts.forEach(p=>{ area[p.mat]+=p.L*p.W*p.q/1e6; qty[p.mat]+=p.q; });
+  const sheetA=g.sheetL*g.sheetW/1e6;
+  const mats=MKEYS.map(k=>{
+    const withW=area[k]*(1+g.waste/100);
+    const plates=withW>0?Math.ceil(withW/sheetA-1e-9):0;
+    const price=S.prices[k]||0;
+    return {key:k,name:MN[k],pieces:qty[k],area:area[k],withW,plates,price,sum:plates*price};
+  });
+  const counterLen=S.base.filter(m=>['sink','doors','drawers','dw'].includes(m.type)).reduce((a,m)=>a+m.w,0);
+  return {parts,notes:[...notes],cnt,mats,counterLen,total:mats.reduce((a,m)=>a+m.sum,0)};
+}
+
+/* ===== Геометрия на скицата ===== */
+function geometry(S){
+  const g=S.g, gap=g.gap, bh=bodyH(g), it=[];
+  const R=(x,y,w,h,layer)=>it.push({t:'rect',x,y,w,h,layer});
+  const Ln=(x1,y1,x2,y2,layer)=>it.push({t:'line',x1,y1,x2,y2,layer});
+  const Tx=(x,y,s,h,anchor)=>it.push({t:'text',x,y,s,h,layer:'TEXT',anchor:anchor||'middle'});
+  const Pl=(pts,layer,closed)=>it.push({t:'poly',pts,layer,closed});
+  const total=sumW(S.base);
+  const topY=g.legs+bh-gap;
+
+  const doorsDraw=(x,w,y0,h,n,handleAtTop)=>{
+    const dw=(w-(n+1)*gap)/n;
+    for(let k=0;k<n;k++){
+      const dx=x+gap+k*(dw+gap);
+      R(dx,y0,dw,h,'FRONTS');
+      const left=(k<n/2) ? false : true;
+      const hx = n===1 ? dx+dw-35 : (left ? dx+35 : dx+dw-35);
+      if(handleAtTop) Ln(hx,y0+h-130,hx,y0+h-30,'HARDWARE'); else Ln(hx,y0+30,hx,y0+130,'HARDWARE');
+    }
+  };
+
+  let x=0, runStart=null; const runs=[];
+  S.base.forEach(m=>{
+    const w=m.w, cab=['sink','doors','drawers','dw'].includes(m.type), T=BASE_TYPES[m.type];
+    if(cab){ if(runStart===null) runStart=x; } else if(runStart!==null){ runs.push([runStart,x]); runStart=null; }
+    if(m.type==='fridge'){
+      R(x,0,w,m.h,'APPLIANCES');
+      Ln(x,m.h*0.36,x+w,m.h*0.36,'APPLIANCES');
+      Ln(x+w-35,m.h*0.36+60,x+w-35,m.h*0.36+360,'HARDWARE');
+      Ln(x+w-35,m.h*0.36-60,x+w-35,m.h*0.36-360,'HARDWARE');
+      Tx(x+w/2,m.h*0.7,T.short,52);
+    } else if(m.type==='oven'){
+      const carcH=g.tallH-g.legs, dh=m.drawerH, oh=m.ovenH, th=carcH-dh-oh;
+      R(x,0,w,g.legs,'CABINETS');
+      R(x,g.legs,w,carcH,'CABINETS');
+      R(x+gap,g.legs+gap,w-2*gap,dh-2*gap,'FRONTS');
+      Ln(x+w/2-80,g.legs+dh-60,x+w/2+80,g.legs+dh-60,'HARDWARE');
+      R(x+gap,g.legs+dh,w-2*gap,oh,'APPLIANCES');
+      Tx(x+w/2,g.legs+dh+oh/2-15,T.short,52);
+      R(x+gap,g.legs+dh+oh+gap,w-2*gap,th-2*gap,'FRONTS');
+      Ln(x+w-35,g.legs+dh+oh+gap+30,x+w-35,g.legs+dh+oh+gap+130,'HARDWARE');
+    } else {
+      R(x,0,w,g.legs,'CABINETS');
+      R(x,g.legs,w,bh,'CABINETS');
+      if(m.type==='sink'||m.type==='doors'){
+        doorsDraw(x,w,g.legs+gap,bh-2*gap,Math.max(1,m.doors|0),true);
+        if(m.type==='sink'){
+          R(x+w*0.12,g.counterH,w*0.76,10,'APPLIANCES');
+          Pl([[x+w/2,g.counterH],[x+w/2,g.counterH+260],[x+w/2+110,g.counterH+260]],'HARDWARE',false);
+          Tx(x+w/2,g.legs+bh*0.35,T.short,52);
+        }
+      } else if(m.type==='drawers'){
+        let y=topY;
+        parseFronts(m.fronts).forEach(f=>{
+          R(x+gap,y-f,w-2*gap,f,'FRONTS');
+          Ln(x+w/2-80,y-f/2,x+w/2+80,y-f/2,'HARDWARE');
+          y-=f+2*gap;
+        });
+        if(m.hob) R(x+w*0.2,g.counterH,w*0.6,12,'APPLIANCES');
+      } else if(m.type==='dw'){
+        R(x+gap,topY-m.panelH,w-2*gap,m.panelH,'APPLIANCES');
+        Ln(x+w/2-80,topY-40,x+w/2+80,topY-40,'HARDWARE');
+        Tx(x+w/2,topY-m.panelH/2-15,T.short,48);
+      }
+    }
+    x+=w;
+  });
+  if(runStart!==null) runs.push([runStart,x]);
+  runs.forEach(([a,b])=>R(a,g.legs+bh,b-a,g.counterT,'COUNTERTOP'));
+
+  ['up1','up2'].forEach(key=>{
+    const y1 = key==='up1' ? g.mainBottom : g.mainTop;
+    const y2 = key==='up1' ? g.mainTop : g.tallH;
+    const H=y2-y1; if(H<=0) return;
+    let ux=0;
+    S[key].forEach(m=>{
+      const w=m.w;
+      if(m.type==='cab'){
+        R(ux,y1,w,H,'CABINETS');
+        doorsDraw(ux,w,y1+gap,H-2*gap,Math.max(1,m.doors|0),false);
+      } else if(m.type==='hood' && key==='up1'){
+        Pl([[ux,y1],[ux+w,y1],[ux+w*0.75,y1+240],[ux+w*0.25,y1+240]],'APPLIANCES',true);
+        R(ux+w*0.35,y1+240,w*0.3,Math.max(0,g.tallH-(y1+240)),'APPLIANCES');
+        Tx(ux+w/2,y1+95,'Аспиратор',44);
+      }
+      ux+=w;
+    });
+  });
+
+  Ln(-60,0,total+60,0,'FLOOR');
+
+  const cy=-120;
+  Ln(0,cy,total,cy,'DIMS');
+  let bx=0; Ln(0,cy-28,0,cy+28,'DIMS');
+  S.base.forEach(m=>{ Tx(bx+m.w/2,cy-85,fmt(m.w),46); bx+=m.w; Ln(bx,cy-28,bx,cy+28,'DIMS'); });
+  const ty=-300;
+  Ln(0,ty,total,ty,'DIMS'); Ln(0,ty-28,0,ty+28,'DIMS'); Ln(total,ty-28,total,ty+28,'DIMS');
+  Tx(total/2,ty-85,fmt(total),52);
+
+  const lv=[0,g.counterH,g.mainBottom,g.mainTop,g.tallH].filter((v,i,a)=>v>=0&&a.indexOf(v)===i).sort((a,b)=>a-b);
+  const dx=-110;
+  Ln(dx,lv[0],dx,lv[lv.length-1],'DIMS');
+  lv.forEach(v=>Ln(dx-28,v,dx+28,v,'DIMS'));
+  for(let i=0;i<lv.length-1;i++) Tx(dx-45,(lv[i]+lv[i+1])/2-20,fmt(lv[i+1]-lv[i]),46,'end');
+
+  return {items:it,minX:-340,maxX:total+200,minY:-440,maxY:g.tallH+120};
+}
+
+function svgString(S,forExport){
+  const G=geometry(S), W=G.maxX-G.minX, H=G.maxY-G.minY;
+  const X=x=>r1(x-G.minX), Y=y=>r1(G.maxY-y);
+  const out=[];
+  const size = forExport ? ` width="${Math.round(W/2)}" height="${Math.round(H/2)}"` : '';
+  out.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"${size} font-family="Golos Text, Arial, sans-serif" role="img" aria-label="Скица на кухнята, изглед отпред">`);
+  out.push(`<rect width="${W}" height="${H}" fill="#FFFFFF"/>`);
+  const sty=(L,noFill)=>`fill="${noFill?'none':LAYERS[L].fill}" stroke="${LAYERS[L].stroke}" stroke-width="1.2" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"`;
+  G.items.forEach(e=>{
+    if(e.t==='rect') out.push(`<rect x="${X(e.x)}" y="${Y(e.y+e.h)}" width="${r1(e.w)}" height="${r1(e.h)}" ${sty(e.layer)}/>`);
+    else if(e.t==='line') out.push(`<line x1="${X(e.x1)}" y1="${Y(e.y1)}" x2="${X(e.x2)}" y2="${Y(e.y2)}" ${sty(e.layer,true)}/>`);
+    else if(e.t==='poly') out.push(`<${e.closed?'polygon':'polyline'} points="${e.pts.map(p=>X(p[0])+','+Y(p[1])).join(' ')}" ${sty(e.layer,!e.closed)}/>`);
+    else if(e.t==='text') out.push(`<text x="${X(e.x)}" y="${Y(e.y)}" font-size="${e.h}" text-anchor="${e.anchor}" fill="${LAYERS.TEXT.fill}">${esc(e.s)}</text>`);
+  });
+  out.push('</svg>');
+  return out.join('');
+}
+
+/* ===== DXF (R12, ASCII) ===== */
+function dxfStr(s){ return String(s).replace(/[^\x20-\x7E]/g,c=>'\\U+'+c.charCodeAt(0).toString(16).toUpperCase().padStart(4,'0')); }
+function toDXF(S){
+  const G=geometry(S), L=[];
+  const p=(c,v)=>L.push(String(c),String(v));
+  const n=v=>(Math.round(v*1000)/1000).toFixed(3);
+  p(0,'SECTION'); p(2,'HEADER'); p(9,'$ACADVER'); p(1,'AC1009'); p(0,'ENDSEC');
+  p(0,'SECTION'); p(2,'TABLES');
+  p(0,'TABLE'); p(2,'LTYPE'); p(70,1);
+  p(0,'LTYPE'); p(2,'CONTINUOUS'); p(70,0); p(3,'Solid line'); p(72,65); p(73,0); p(40,'0.0');
+  p(0,'ENDTAB');
+  const names=Object.keys(LAYERS);
+  p(0,'TABLE'); p(2,'LAYER'); p(70,names.length);
+  names.forEach(nm=>{ p(0,'LAYER'); p(2,nm); p(70,0); p(62,LAYERS[nm].aci); p(6,'CONTINUOUS'); });
+  p(0,'ENDTAB');
+  p(0,'TABLE'); p(2,'STYLE'); p(70,1);
+  p(0,'STYLE'); p(2,'STANDARD'); p(70,0); p(40,'0.0'); p(41,'1.0'); p(50,'0.0'); p(71,0); p(42,'2.5'); p(3,'txt'); p(4,'');
+  p(0,'ENDTAB');
+  p(0,'ENDSEC');
+  p(0,'SECTION'); p(2,'ENTITIES');
+  const line=(a,b,c,d,layer)=>{ p(0,'LINE'); p(8,layer); p(10,n(a)); p(20,n(b)); p(30,'0.0'); p(11,n(c)); p(21,n(d)); p(31,'0.0'); };
+  G.items.forEach(e=>{
+    if(e.t==='rect'){ line(e.x,e.y,e.x+e.w,e.y,e.layer); line(e.x+e.w,e.y,e.x+e.w,e.y+e.h,e.layer); line(e.x+e.w,e.y+e.h,e.x,e.y+e.h,e.layer); line(e.x,e.y+e.h,e.x,e.y,e.layer); }
+    else if(e.t==='line') line(e.x1,e.y1,e.x2,e.y2,e.layer);
+    else if(e.t==='poly'){ const q=e.pts; for(let i=0;i<q.length-1;i++) line(q[i][0],q[i][1],q[i+1][0],q[i+1][1],e.layer); if(e.closed) line(q[q.length-1][0],q[q.length-1][1],q[0][0],q[0][1],e.layer); }
+    else if(e.t==='text'){
+      const al = e.anchor==='middle'?1 : e.anchor==='end'?2 : 0;
+      p(0,'TEXT'); p(8,e.layer); p(10,n(e.x)); p(20,n(e.y)); p(30,'0.0'); p(40,n(e.h)); p(1,dxfStr(e.s));
+      if(al){ p(72,al); p(11,n(e.x)); p(21,n(e.y)); p(31,'0.0'); }
+    }
+  });
+  p(0,'ENDSEC'); p(0,'EOF');
+  return L.join('\r\n')+'\r\n';
+}
+
+/* ===== Изход: Excel, CSV ===== */
+function exportXlsx(S,R){
+  if(!window.XLSX){ alert('Библиотеката за Excel не се зареди. Провери връзката с интернет или свали CSV.'); return; }
+  const parts=R.parts, g=S.g, last=parts.length+1;
+  const head=['№','Група','Модул','Детайл','Материал','Дължина (мм)','Ширина (мм)','Брой','Площ (м²)','Кант'];
+  const aoa=[head]; parts.forEach((p,i)=>aoa.push([i+1,p.grp,p.mod,p.part,MN[p.mat],p.L,p.W,p.q,p.L*p.W*p.q/1e6,p.edge]));
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  parts.forEach((p,i)=>{ const r=i+2; ws['I'+r]={t:'n',f:`F${r}*G${r}*H${r}/1000000`,v:p.L*p.W*p.q/1e6,z:'0.000'}; });
+  const totA=parts.reduce((a,p)=>a+p.L*p.W*p.q/1e6,0), totQ=parts.reduce((a,p)=>a+p.q,0);
+  ws['D'+(last+1)]={t:'s',v:'Общо'};
+  ws['H'+(last+1)]={t:'n',f:`SUM(H2:H${last})`,v:totQ};
+  ws['I'+(last+1)]={t:'n',f:`SUM(I2:I${last})`,v:totA,z:'0.000'};
+  ws['!ref']=`A1:J${last+1}`;
+  ws['!cols']=[{wch:5},{wch:20},{wch:34},{wch:44},{wch:22},{wch:13},{wch:13},{wch:8},{wch:11},{wch:22}];
+  ws['!autofilter']={ref:`A1:J${last}`};
+
+  const sa=[['Обобщение на материалите'],[],['Входни данни (редактирай)'],
+    ['Добавка за фире (дял)',g.waste/100],['Плоча, дължина (мм)',g.sheetL],['Плоча, ширина (мм)',g.sheetW],[],
+    ['Материал','Детайли (бр.)','Площ (м²)','Площ с добавка (м²)','Плочи (прибл. бр.)','Цена на плоча (€)','Сума (€)']];
+  R.mats.forEach(m=>sa.push([m.name,m.pieces,m.area,m.withW,m.plates,m.price,m.sum]));
+  sa.push(['Общо',0,0,0,null,null,0]);
+  const ss=XLSX.utils.aoa_to_sheet(sa);
+  R.mats.forEach((m,i)=>{
+    const r=9+i;
+    ss['B'+r]={t:'n',f:`SUMIFS('Разкрой'!$H$2:$H$${last},'Разкрой'!$E$2:$E$${last},A${r})`,v:m.pieces};
+    ss['C'+r]={t:'n',f:`SUMIFS('Разкрой'!$I$2:$I$${last},'Разкрой'!$E$2:$E$${last},A${r})`,v:m.area,z:'0.00'};
+    ss['D'+r]={t:'n',f:`C${r}*(1+$B$4)`,v:m.withW,z:'0.00'};
+    ss['E'+r]={t:'n',f:`ROUNDUP(D${r}/($B$5*$B$6/1000000),0)`,v:m.plates};
+    ss['G'+r]={t:'n',f:`E${r}*F${r}`,v:m.sum,z:'#,##0.00'};
+  });
+  ss['B4'].z='0%';
+  ss['B13']={t:'n',f:'SUM(B9:B12)',v:R.mats.reduce((a,m)=>a+m.pieces,0)};
+  ss['C13']={t:'n',f:'SUM(C9:C12)',v:R.mats.reduce((a,m)=>a+m.area,0),z:'0.00'};
+  ss['D13']={t:'n',f:'SUM(D9:D12)',v:R.mats.reduce((a,m)=>a+m.withW,0),z:'0.00'};
+  ss['G13']={t:'n',f:'SUM(G9:G12)',v:R.total,z:'#,##0.00'};
+  ss['!ref']='A1:G13';
+  ss['!cols']=[{wch:30},{wch:16},{wch:14},{wch:20},{wch:18},{wch:18},{wch:14}];
+
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Разкрой');
+  XLSX.utils.book_append_sheet(wb,ss,'Обобщение');
+  wb.Workbook={CalcPr:{fullCalcOnLoad:true}};
+  XLSX.writeFile(wb,fileBase(S)+'-razkroi.xlsx');
+}
+function csvText(R){
+  const rows=[['Материал','Дължина','Ширина','Брой','Етикет']];
+  R.parts.forEach(p=>rows.push([MN[p.mat],p.L,p.W,p.q,p.mod+' / '+p.part]));
+  return '\uFEFF'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+}
+
+/* ===== Състояние и интерфейс ===== */
+const KEY='kitchen-razkroi-v1';
+let S=defaultState();
+try{ const raw=localStorage.getItem(KEY); if(raw) S=mergeState(JSON.parse(raw)); }catch(e){}
+
+function mergeState(o){
+  const d=defaultState();
+  return {name:o.name||d.name,g:Object.assign(d.g,o.g||{}),d:Object.assign(d.d,o.d||{}),prices:Object.assign(d.prices,o.prices||{}),
+    base:Array.isArray(o.base)?o.base:d.base,up1:Array.isArray(o.up1)?o.up1:d.up1,up2:Array.isArray(o.up2)?o.up2:d.up2};
+}
+function fileBase(s){ return (s.name||'kuhnya').toLowerCase().replace(/[^a-z0-9а-я]+/gi,'-').replace(/^-|-$/g,'')||'kuhnya'; }
+function download(name,text,type){
+  const blob=new Blob([text],{type:type||'text/plain'}); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+}
+
+const GFIELDS=[
+  ['L','Обща дължина на кухнята'],['t','Дебелина на плочата'],
+  ['legs','Височина на крачетата'],['counterH','Височина на плота от пода'],
+  ['counterT','Дебелина на плота'],['railW','Ширина на гредите (долни)'],
+  ['baseDepth','Дълбочина на долните, общо'],['baseCar','Дълбочина на корпуса (долни)'],
+  ['upDepth','Дълбочина на горните, общо'],['upCar','Дълбочина на корпуса (горни)'],
+  ['tallH','Височина на колоните и горния ред'],['gap','Луфт на фасадите (на страна)'],
+  ['mainBottom','Долен ръб на основния горен ред'],['mainTop','Горен ръб на основния горен ред'],
+  ['shelfSet','Отстъп на рафтовете от корпуса']
+];
+function fieldHtml(path,label,val,unit){
+  return `<label class="field">${esc(label)}<input type="number" inputmode="decimal" step="any" data-path="${path}" value="${val}"></label>`;
+}
+function modRow(rowKey,i,m){
+  const types=rowKey==='base'?BASE_TYPES:UP_TYPES;
+  const opts=Object.entries(types).map(([k,v])=>`<option value="${k}"${m.type===k?' selected':''}>${esc(v.label)}</option>`).join('');
+  const ni=(k,label,val)=>`<label>${label}<input type="number" inputmode="decimal" step="any" data-row="${rowKey}" data-i="${i}" data-k="${k}" value="${val}"></label>`;
+  let p='';
+  if(m.type==='sink'||m.type==='doors'||m.type==='cab') p=ni('doors','Врати',m.doors)+ni('shelves','Рафтове',m.shelves);
+  else if(m.type==='drawers') p=`<label>Чела (мм, със запетая)<input type="text" data-row="${rowKey}" data-i="${i}" data-k="fronts" data-str="1" value="${esc(m.fronts)}"></label>`+
+    `<label class="inl"><input type="checkbox" data-row="${rowKey}" data-i="${i}" data-k="hob"${m.hob?' checked':''}>Котлон отгоре</label>`;
+  else if(m.type==='dw') p=ni('panelH','Височина на панела',m.panelH);
+  else if(m.type==='oven') p=ni('drawerH','Чекмедже',m.drawerH)+ni('ovenH','Ниша за фурна',m.ovenH);
+  else if(m.type==='fridge') p=ni('h','Височина',m.h);
+  else if(m.type==='gap') p=`<label>Бележка<input type="text" data-row="${rowKey}" data-i="${i}" data-k="label" data-str="1" value="${esc(m.label||'')}"></label>`;
+  let hint='';
+  if(m.type==='drawers'){
+    const g=S.g, avail=bodyH(g)-2*g.gap, sum=parseFronts(m.fronts).reduce((a,b)=>a+b,0);
+    hint=`<div class="hint">Сума на челата ${fmt(sum)} от ${fmt(avail)} мм свободна височина</div>`;
+  }
+  return `<div class="mod"><div class="l1">
+    <select data-row="${rowKey}" data-i="${i}" data-k="type" aria-label="Вид модул">${opts}</select>
+    <input type="number" inputmode="decimal" step="any" data-row="${rowKey}" data-i="${i}" data-k="w" value="${m.w}" aria-label="Ширина, мм">
+    <div class="btns">
+      <button class="btn small icon" data-act="up" data-row="${rowKey}" data-i="${i}" aria-label="Премести наляво">←</button>
+      <button class="btn small icon" data-act="down" data-row="${rowKey}" data-i="${i}" aria-label="Премести надясно">→</button>
+      <button class="btn small icon" data-act="del" data-row="${rowKey}" data-i="${i}" aria-label="Изтрий модула">×</button>
+    </div></div>${p?`<div class="l2">${p}</div>`:''}${hint}</div>`;
+}
+function listSection(rowKey,title,intro){
+  const types=rowKey==='base'?BASE_TYPES:UP_TYPES;
+  const opts=Object.entries(types).map(([k,v])=>`<option value="${k}">${esc(v.label)}</option>`).join('');
+  return `<details open><summary>${esc(title)}</summary><div class="body">
+    <div class="rowhead"><span class="small">${esc(intro)}</span><span class="badge" id="sum-${rowKey}"></span></div>
+    <div id="list-${rowKey}">${S[rowKey].map((m,i)=>modRow(rowKey,i,m)).join('')}</div>
+    <div class="addbar"><select id="addtype-${rowKey}" aria-label="Вид нов модул">${opts}</select>
+    <button class="btn small" data-act="add" data-row="${rowKey}">Добави модул</button></div>
+  </div></details>`;
+}
+function renderEditor(){
+  const g=S.g,d=S.d;
+  const gf=GFIELDS.map(([k,l])=>fieldHtml('g.'+k,l,g[k])).join('');
+  const html=
+  `<details open><summary>Размери и конструкция</summary><div class="body"><div class="grid2">${gf}
+    <label class="check"><input type="checkbox" data-path="g.extBase"${g.extBase?' checked':''}>Дъното на долните шкафове е външно (на пълна ширина)</label>
+    <label class="check"><input type="checkbox" data-path="g.extUp"${g.extUp?' checked':''}>Дъното и таванът на горните шкафове и колоните са външни</label>
+  </div></div></details>
+  <details><summary>Чекмеджета</summary><div class="body"><div class="grid2">
+    <label class="field wide">Система
+      <select data-path="d.sys"><option value="tandem"${d.sys==='tandem'?' selected':''}>Blum Tandembox (дъно и гръб от ПДЧ 16)</option>
+      <option value="tele"${d.sys==='tele'?' selected':''}>Телескопични водачи (цяла кутия)</option></select></label>
+    ${fieldHtml('d.NL','Номинална дължина NL',d.NL)}
+    ${d.sys==='tandem'?fieldHtml('d.backH','Височина на гърба (по таблицата на Blum)',d.backH):fieldHtml('d.boxH','Височина на кутията',d.boxH)}
+    ${d.sys==='tele'?fieldHtml('d.bt','Дебелина на бордовете',d.bt):''}
+    <div class="hint field wide">Tandembox: ширина на дъното и гърба = вътрешна ширина минус 75 мм, дължина на дъното = NL минус 10 мм. Провери стойностите в каталога на Blum.</div>
+  </div></div></details>
+  ${listSection('base','Долен ред и колони','Отляво надясно. Ширини в мм.')}
+  ${listSection('up1','Горен основен ред','Шкафове между долния ръб и горния ръб на реда.')}
+  ${listSection('up2','Най-горен ред','Шкафове под тавана. Празните места са за колони и комини.')}
+  <details><summary>Плочи и цени</summary><div class="body"><div class="grid2">
+    ${fieldHtml('g.sheetL','Плоча, дължина (мм)',g.sheetL)}${fieldHtml('g.sheetW','Плоча, ширина (мм)',g.sheetW)}
+    ${fieldHtml('g.waste','Добавка за фире (%)',g.waste)}<span></span>
+    ${MKEYS.map(k=>fieldHtml('prices.'+k,'Цена на плоча, '+MN[k]+' (€)',S.prices[k])).join('')}
+  </div></div></details>`;
+  document.getElementById('editor').innerHTML=html;
+  document.getElementById('projName').value=S.name;
+}
+
+function renderOutput(){
+  const R=compute(S);
+  document.getElementById('sketch').innerHTML=svgString(S,false);
+  document.getElementById('notes').innerHTML=R.notes.length?'<ul>'+R.notes.map(n=>`<li>${esc(n)}</li>`).join('')+'</ul>':'';
+
+  let rows='', last='';
+  R.parts.forEach(p=>{
+    if(p.grp!==last){ rows+=`<tr class="grp"><td colspan="8">${esc(p.grp)}</td></tr>`; last=p.grp; }
+    rows+=`<tr><td>${esc(p.mod)}</td><td>${esc(p.part)}</td><td>${esc(MN[p.mat])}</td><td class="n">${fmt(p.L)}</td><td class="n">${fmt(p.W)}</td><td class="n">${p.q}</td><td class="n">${(p.L*p.W*p.q/1e6).toFixed(3)}</td><td>${esc(p.edge)}</td></tr>`;
+  });
+  const totQ=R.parts.reduce((a,p)=>a+p.q,0), totA=R.parts.reduce((a,p)=>a+p.L*p.W*p.q/1e6,0);
+  document.getElementById('cutTable').innerHTML=`<table><thead><tr><th>Модул</th><th>Детайл</th><th>Материал</th><th class="n">Дължина</th><th class="n">Ширина</th><th class="n">Бр.</th><th class="n">Площ м²</th><th>Кант</th></tr></thead><tbody>${rows}</tbody><tfoot><tr><td colspan="5">Общо</td><td class="n">${totQ}</td><td class="n">${totA.toFixed(2)}</td><td></td></tr></tfoot></table>`;
+
+  const tp=R.mats.reduce((a,m)=>a+m.plates,0);
+  document.getElementById('stats').innerHTML=
+    `<div class="stat"><b>${R.total.toFixed(0)} €</b><span>плочи, ${tp} бр. общо</span></div>`+
+    `<div class="stat"><b>${totA.toFixed(1)} м²</b><span>площ на детайлите</span></div>`+
+    `<div class="stat"><b>${fmt(R.counterLen)} мм</b><span>дължина на плота</span></div>`;
+  document.getElementById('sumTable').innerHTML=`<table><thead><tr><th>Материал</th><th class="n">Детайли</th><th class="n">Площ м²</th><th class="n">С добавка м²</th><th class="n">Плочи</th><th class="n">Цена €</th><th class="n">Сума €</th></tr></thead><tbody>`+
+    R.mats.map(m=>`<tr><td>${esc(m.name)}</td><td class="n">${m.pieces}</td><td class="n">${m.area.toFixed(2)}</td><td class="n">${m.withW.toFixed(2)}</td><td class="n">${m.plates}</td><td class="n">${fmt(m.price)}</td><td class="n">${m.sum.toFixed(0)}</td></tr>`).join('')+
+    `</tbody><tfoot><tr><td colspan="6">Общо за плочите</td><td class="n">${R.total.toFixed(0)}</td></tr></tfoot></table>`;
+  document.getElementById('extra').innerHTML=
+    `Врати: ${R.cnt.doors} (панти около ${R.cnt.hinges}), чекмеджета: ${R.cnt.drawers}, рафтове: ${R.cnt.shelves}. `+
+    `Броят плочи е груба оценка и зависи от подреждането при рязане. Цената не включва кант, обков, плот, уреди и монтаж.`;
+
+  ['base','up1','up2'].forEach(k=>{
+    const b=document.getElementById('sum-'+k); if(!b) return;
+    const s=sumW(S[k]), diff=s-S.g.L;
+    b.textContent=`Σ ${fmt(s)}`+(Math.abs(diff)<=0.5?' ✓':(diff>0?` (+${fmt(diff)})`:` (${fmt(diff)})`));
+    b.className='badge '+(Math.abs(diff)<=0.5?'ok':'bad');
+  });
+  return R;
+}
+
+let saveT=null;
+function update(){
+  renderOutput();
+  clearTimeout(saveT); saveT=setTimeout(()=>{ try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} },400);
+}
+function setPath(path,val){ const [a,b]=path.split('.'); S[a][b]=val; }
+
+const ed=document.getElementById('editor');
+ed.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset.path){
+    if(t.type==='checkbox') setPath(t.dataset.path,t.checked);
+    else if(t.tagName==='SELECT') return;
+    else setPath(t.dataset.path,num(t.value));
+    update();
+  } else if(t.dataset.row && t.dataset.k!=='type'){
+    const m=S[t.dataset.row][+t.dataset.i]; if(!m) return;
+    const k=t.dataset.k;
+    m[k]= t.type==='checkbox' ? t.checked : (t.dataset.str ? t.value : num(t.value));
+    update();
+    const row=t.closest('.mod'); const h=row&&row.querySelector('.hint');
+    if(h && m.type==='drawers'){ const g=S.g, av=bodyH(g)-2*g.gap, sm=parseFronts(m.fronts).reduce((a,b)=>a+b,0); h.textContent=`Сума на челата ${fmt(sm)} от ${fmt(av)} мм свободна височина`; }
+  }
+});
+ed.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.path && t.tagName==='SELECT'){ setPath(t.dataset.path,t.value); renderEditor(); update(); }
+  else if(t.dataset.row && t.dataset.k==='type'){
+    const row=t.dataset.row, i=+t.dataset.i, types=row==='base'?BASE_TYPES:UP_TYPES, w=S[row][i].w;
+    S[row][i]=Object.assign({type:t.value},JSON.parse(JSON.stringify(types[t.value].def)),{w});
+    renderEditor(); update();
+  }
+});
+ed.addEventListener('click',e=>{
+  const b=e.target.closest('button[data-act]'); if(!b) return;
+  const row=b.dataset.row, i=+b.dataset.i, arr=S[row], act=b.dataset.act;
+  if(act==='del') arr.splice(i,1);
+  else if(act==='up' && i>0) [arr[i-1],arr[i]]=[arr[i],arr[i-1]];
+  else if(act==='down' && i<arr.length-1) [arr[i+1],arr[i]]=[arr[i],arr[i+1]];
+  else if(act==='add'){ const ty=document.getElementById('addtype-'+row).value, types=row==='base'?BASE_TYPES:UP_TYPES;
+    arr.push(Object.assign({type:ty},JSON.parse(JSON.stringify(types[ty].def)))); }
+  renderEditor(); update();
+});
+
+document.getElementById('projName').addEventListener('input',e=>{ S.name=e.target.value; update(); });
+document.getElementById('btnSave').addEventListener('click',()=>{ try{localStorage.setItem(KEY,JSON.stringify(S)); alert('Проектът е запазен в този браузър.');}catch(e){alert('Браузърът не позволява запазване. Свали проекта като файл.');} });
+document.getElementById('btnExportJson').addEventListener('click',()=>download(fileBase(S)+'.json',JSON.stringify(S,null,2),'application/json'));
+document.getElementById('fileJson').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return; const rd=new FileReader();
+  rd.onload=()=>{ try{ S=mergeState(JSON.parse(rd.result)); renderEditor(); update(); }catch(err){ alert('Файлът не е валиден проект.'); } };
+  rd.readAsText(f); e.target.value='';
+});
+document.getElementById('btnReset').addEventListener('click',()=>{ if(confirm('Да изтрия текущия проект и да започна с примерната кухня?')){ S=defaultState(); renderEditor(); update(); } });
+document.getElementById('btnSvg').addEventListener('click',()=>download(fileBase(S)+'.svg',svgString(S,true),'image/svg+xml'));
+document.getElementById('btnDxf').addEventListener('click',()=>download(fileBase(S)+'.dxf',toDXF(S),'application/dxf'));
+document.getElementById('btnCsv').addEventListener('click',()=>download(fileBase(S)+'-razkroi.csv',csvText(compute(S)),'text/csv'));
+document.getElementById('btnXlsx').addEventListener('click',()=>exportXlsx(S,compute(S)));
+document.getElementById('btnPng').addEventListener('click',()=>{
+  const svg=svgString(S,true), img=new Image();
+  const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
+  img.onload=()=>{
+    const sc=2, c=document.createElement('canvas'); c.width=img.width*sc; c.height=img.height*sc;
+    const cx=c.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,c.width,c.height); cx.drawImage(img,0,0,c.width,c.height);
+    c.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=fileBase(S)+'.png'; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500); });
+    URL.revokeObjectURL(url);
+  };
+  img.onerror=()=>alert('PNG не може да се създаде в този браузър. Свали SVG.');
+  img.src=url;
+});
+
+renderEditor(); update();
+window.__app={compute,geometry,svgString,toDXF,csvText,defaultState,get S(){return S;},set S(v){S=v;}};
+</script>
+</body>
+</html>
